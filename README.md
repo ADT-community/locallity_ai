@@ -67,6 +67,7 @@ Phones support some African languages better than others for built-in speech. Ou
 
 ## Starter tasks (bounty candidates)
 
+- [ ] **Design bounty:** replace the placeholder minimal design with a proper design system and screens (`web/styles.css`)
 - [ ] Survey open datasets and models for the first 2 languages (research bounty)
 - [ ] Core API: take a question in a local language, return an answer
 - [x] Voice-first chat web app (`web/`)
