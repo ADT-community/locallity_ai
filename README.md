@@ -41,49 +41,76 @@ Out of the box it uses the phone's own speech recognition and voices, and runs i
 
 Phones support some African languages better than others for built-in speech. Our own `sttUrl` and `ttsUrl` models are how we cover the rest.
 
+## Core API (`api/`)
+
+The core API provides the "brain" for the web app and other channels. It accepts text and a language code, and returns an answer in the same language.
+
+### Setup
+
+1. Install dependencies:
+   ```bash
+   cd api
+   pip install -r requirements.txt
+   ```
+
+2. Configure environment variables:
+   ```bash
+   export LLM_API_URL="https://api.openai.com/v1/chat/completions"
+   export LLM_API_KEY="your-api-key"
+   ```
+
+3. Run the server:
+   ```bash
+   uvicorn main:app --host 0.0.0.0 --port 8000
+   ```
+
+### Usage
+
+Send a POST request to `/v1/chat` with a JSON body:
+
+```json
+{
+  "lang": "sw-KE",
+  "messages": [
+    {"role": "user", "content": "Habari yako?"}
+  ]
+}
+```
+
+Response:
+
+```json
+{
+  "reply": "Niko vizuri, asante. Wewe?"
+}
+```
+
+### Supported Languages
+
+- Kiswahili (sw-KE)
+- English (en-NG)
+- isiZulu (zu-ZA)
+- isiXhosa (xh-ZA)
+- Afrikaans (af-ZA)
+- Amharic (am-ET)
+- Yorùbá (yo-NG)
+- Hausa (ha-NG)
+- Igbo (ig-NG)
+- Kinyarwanda (rw-RW)
+- Soomaali (so-SO)
+- Français (fr-SN)
+
+### Testing
+
+Run the test suite:
+
+```bash
+cd api
+pytest
+```
+
 ## How it earns
 
 - API access for banks, telcos, agri-businesses and NGOs
 - Partnerships (e.g. input suppliers, co-ops)
 - Licensing the language models and tools
-
-## Suggested stack
-
-- **Core API:** one service that every app and channel talks to
-- **Apps:** its own mobile and web app
-- **Channels:** WhatsApp, SMS, USSD and voice via providers like Africa's Talking, added one by one
-- **Models:** open models fine-tuned on public African-language datasets; small enough to run cheaply (and offline on laptops, in the spirit of the ADT Laptop LLM Challenge)
-- **Speech:** open speech-to-text and text-to-speech models for the chosen languages
-- **Backend:** Python (FastAPI)
-
-## Goals
-
-| Goal | Done when |
-|---|---|
-| **G1: Core assistant** | Answers everyday and farm questions well in one African language, through the API and a simple app |
-| **G2: Voice** | Users can ask by voice note and get a spoken reply |
-| **G3: Pilot** | 1,000 people using it weekly, including farmers through a partner |
-| **G4: First revenue** | First paying API customer or partner |
-
-## Starter tasks (bounty candidates)
-
-- [ ] **Design bounty:** replace the placeholder minimal design with a proper design system and screens (`web/styles.css`)
-- [ ] Survey open datasets and models for the first 2 languages (research bounty)
-- [ ] Core API: take a question in a local language, return an answer
-- [x] Voice-first chat web app (`web/`)
-- [ ] Connect the web app to the core API (`apiUrl`)
-- [ ] Test built-in speech recognition and voices per language on common Android phones, and record which work (research bounty)
-- [ ] Knowledge base for trusted answers (start with farming and health)
-- [ ] Translation layer: local language ↔ English
-- [ ] Evaluation set: 100 real farmer questions with good answers, per language
-- [ ] Speech-to-text prototype for one language
-
-## Contribute
-
-See the [website](https://adt-community.github.io) for how bounties and goals work, then pick an open issue in this repo.
-
-## License
-
-[GNU AGPL-3.0](LICENSE). You can use, study, change and share this code. If you run a modified version as a service for others, you must publish your changes under the same license.
-
-By contributing, you agree your contributions are licensed under the same terms.
