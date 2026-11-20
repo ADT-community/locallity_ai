@@ -41,6 +41,16 @@ Out of the box it uses the phone's own speech recognition and voices, and runs i
 
 Phones support some African languages better than others for built-in speech. Our own `sttUrl` and `ttsUrl` models are how we cover the rest.
 
+When `apiUrl` is set, the app keeps the *Thinking…* state while it waits, shows the returned `reply`, and gives a friendly retry message if the request fails or takes longer than 20 seconds (the request is aborted at that point). With an empty `apiUrl`, demo mode behaves exactly as before.
+
+### Tests
+
+The browser code is covered by dependency-free Node tests:
+
+```
+node --test web/tests/api.test.js
+```
+
 ## How it earns
 
 - API access for banks, telcos, agri-businesses and NGOs
