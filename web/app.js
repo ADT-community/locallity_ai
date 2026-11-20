@@ -30,6 +30,10 @@
     speaking: "Speaking…"
   };
 
+  const API_TIMEOUT_MS = 20000;
+  const API_ERROR_TEXT = "Sorry, I couldn't reach the server. Check your connection and try again.";
+  const API_TIMEOUT_TEXT = "That took too long. Check your connection and try again.";
+
   const $ = (s) => document.querySelector(s);
   const el = {
     lang: $("#lang"), handsfree: $("#handsfree"), mute: $("#mute"),
@@ -113,7 +117,7 @@
     }
     el.history.append(div);
     el.history.scrollTop = el.history.scrollHeight;
-    if (role !== "system") state.messages.push({ role, content: text });
+    if (role !== "system" && !opts.transient) state.messages.push({ role, content: text });
   }
 
   /* ---------- hearing ---------- */
@@ -230,17 +234,33 @@
       const last = state.messages[state.messages.length - 1];
       return { text: last ? last.content : "", demo: true };
     }
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    let timer;
+    const timeout = new Promise((resolve) => {
+      timer = setTimeout(() => {
+        if (controller) controller.abort();
+        resolve({ text: API_TIMEOUT_TEXT, demo: false, error: true });
+      }, API_TIMEOUT_MS);
+    });
+    const request = (async () => {
+      try {
+        const res = await fetch(CONFIG.apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lang: state.lang, messages: state.messages }),
+          signal: controller ? controller.signal : undefined
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        return { text: String(data.reply || "").trim() || "…", demo: false };
+      } catch {
+        return { text: API_ERROR_TEXT, demo: false, error: true };
+      }
+    })();
     try {
-      const res = await fetch(CONFIG.apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lang: state.lang, messages: state.messages })
-      });
-      if (!res.ok) throw new Error(res.status);
-      const data = await res.json();
-      return { text: String(data.reply || "").trim() || "…", demo: false };
-    } catch {
-      return { text: "Sorry, I couldn't reach the server. Please try again.", demo: false };
+      return await Promise.race([request, timeout]);
+    } finally {
+      clearTimeout(timer);
     }
   }
 
@@ -250,7 +270,8 @@
     setStatus("thinking", "");
     const reply = await getReply();
     if (turn !== state.turn) return; // conversation was cleared or interrupted
-    addMessage("assistant", reply.text, { demo: reply.demo });
+    addMessage("assistant", reply.text, { demo: reply.demo, transient: reply.error });
+    if (reply.error) showNote(reply.text);
     await speak(reply.text);
     if (turn !== state.turn) return; // user interrupted the reply
     if (state.handsFree && !state.muted && !typed) listen();
