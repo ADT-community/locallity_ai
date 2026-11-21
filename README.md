@@ -41,6 +41,28 @@ Out of the box it uses the phone's own speech recognition and voices, and runs i
 
 Phones support some African languages better than others for built-in speech. Our own `sttUrl` and `ttsUrl` models are how we cover the rest.
 
+## Knowledge base for trusted answers (`kb/`)
+
+Farming answers are grounded in a curated list of openly licensed guides, so replies can be checked against a real source. Health is limited to basic water and hygiene information; the assistant defers medical questions to a local professional.
+
+- `kb/sources.csv` — 25 sources (title, URL, publisher, license, topic, country) from FAO, IITA, CIMMYT, CGIAR/CABI, TAAT and WHO. Each row has an `id` linking it to a local guide summary in `kb/documents/`. The summaries are original, short digests of the openly licensed guides; the full text is available at the source URL.
+- `kb/embeddings.py` — deterministic, dependency-free signed feature-hashing embeddings with corpus IDF. A `sentence-transformers` backend can be selected via `python -m kb build --backend sentence-transformers` when that library is available, but nothing is downloaded by default.
+- `kb/ingest.py` / `kb/store.py` — split each guide into overlapping 120-word chunks, embed them with topic/title weighting and store them in `kb/index.json`. `python -m kb build` regenerates it.
+- `kb/search.py` — `search(question, k=5)` returns passages with `source`, `url`, `license`, `publisher`, `country` and a cosine `score`, highest first.
+- `kb/chat.py` / `kb/api.py` — `POST /chat` accepts `{ lang, messages: [{ role, content }] }` (or `{ question, k }`) and returns `{ reply, sources, citations, passages }`. The reply is extractive: it quotes the top passages and numbers their citations; with no relevant passage it says "I don't know" instead of inventing advice. Start the server with `python -c "from kb.api import serve; serve()"` and POST to `/chat`.
+- `kb/evaluation/questions.json` — 10 representative farmer questions; `kb/evaluation/retrieval_results.md` records the actual top-5 retrieval results. Regenerate with `python -m kb eval`.
+
+No third-party packages are needed for retrieval or tests:
+
+```
+python -m kb build
+python -m kb search "How do I control fall armyworm on maize?" -k 5
+python -m kb eval
+python -m unittest discover -s tests -v
+```
+
+The tests cover source metadata and licences, chunking, embeddings, ranking, the JSON store, retrieval evidence and grounded replies with a mocked search function.
+
 ## How it earns
 
 - API access for banks, telcos, agri-businesses and NGOs
@@ -73,7 +95,7 @@ Phones support some African languages better than others for built-in speech. Ou
 - [x] Voice-first chat web app (`web/`)
 - [ ] Connect the web app to the core API (`apiUrl`)
 - [ ] Test built-in speech recognition and voices per language on common Android phones, and record which work (research bounty)
-- [ ] Knowledge base for trusted answers (start with farming and health)
+- [x] Knowledge base for trusted answers (farming guides + basic water/hygiene)
 - [ ] Translation layer: local language ↔ English
 - [ ] Evaluation set: 100 real farmer questions with good answers, per language
 - [ ] Speech-to-text prototype for one language

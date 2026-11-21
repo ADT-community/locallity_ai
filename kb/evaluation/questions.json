@@ -1,0 +1,14 @@
+{
+  "questions": [
+    {"question": "When should I plant maize in Tanzania and how far apart should the plants be?", "topic": "maize planting"},
+    {"question": "How do I control fall armyworm on maize without spraying chemicals?", "topic": "fall armyworm"},
+    {"question": "What is the best way to prepare cassava stems for planting?", "topic": "cassava planting material"},
+    {"question": "How can I store fresh cassava roots after harvest?", "topic": "cassava post-harvest"},
+    {"question": "When should I sow cowpea in West Africa so it flowers early?", "topic": "cowpea planting date"},
+    {"question": "How do I grow rice with less water using alternate wetting and drying?", "topic": "rice water management"},
+    {"question": "Which legumes can I intercrop with sorghum and millet?", "topic": "sorghum and millet intercropping"},
+    {"question": "What soil is suitable for groundnut and how often should I rotate it?", "topic": "groundnut soils and rotation"},
+    {"question": "How do I make household drinking water safer and store it safely?", "topic": "water and hygiene (basic health)"},
+    {"question": "How does intercropping maize with legumes improve soil fertility?", "topic": "maize-legume intercropping"}
+  ]
+}
