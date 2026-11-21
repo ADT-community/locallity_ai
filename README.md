@@ -41,6 +41,25 @@ Out of the box it uses the phone's own speech recognition and voices, and runs i
 
 Phones support some African languages better than others for built-in speech. Our own `sttUrl` and `ttsUrl` models are how we cover the rest.
 
+## Core API (`api/`)
+
+The shared brain behind every channel: a FastAPI service with `POST /chat`.
+It takes `{ lang, messages: [{ role, content }] }` and returns `{ reply, sources }`
+(the web app uses `apiUrl`, see above). Replies follow a safety prompt: short, in the
+user's language, `I don't know` when unsure, and health questions referred to a local
+professional. Health, emergency and harmful requests are deferred locally before any
+paid LLM call; the LLM key is read only from an environment variable.
+
+Run it and its key-free mocked tests with:
+
+```
+python -m pip install -r api/requirements.txt
+uvicorn api.main:app --reload
+python -m unittest discover -s api/tests -v
+```
+
+See [api/README.md](api/README.md) for configuration and [api/tests/safety_cases.md](api/tests/safety_cases.md) for the 20 recorded safety cases.
+
 ## How it earns
 
 - API access for banks, telcos, agri-businesses and NGOs
